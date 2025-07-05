@@ -1,28 +1,29 @@
-name: Java CI с Gradle
+name: Java CI with Gradle
 
 on: [push, pull_request]
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
-
-      - name: Настройка JDK 11
+      - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
-          java-version: '11'  # Версию JDK ставим согласно требованиям проекта
-          distribution: 'adopt'  # Используем OpenJDK от AdoptOpenJDK
-
-      - name: Предоставить разрешение на выполнение для gradlew
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Запустить SUT (SUT — система под тестированием)
+      - name: Start SUT
+        # Запускаем SUT,
+        # имя файла SUT будет отличаться в каждой задаче.
+        # & означает, что в фоновом режиме не блокируем терминал для запуска тестов,
+        # обязательно должен быть для запуска SUT в CI
         run: java -jar ./artifacts/app-order.jar &
-
-      - name: Собрать проект с помощью Gradle
-        run: |
-          # Для проектов на базе Selenide добавляем аргумент "-Dselenide.headless=true",
-          # чтобы браузер работал в headless режиме (без графического интерфейса).
-          # Параметр "--info" нужен для вывода подробной информации о ходе сборки.
-          ./gradlew test --info -Dselenide.headless=true
+      - name: Build with Gradle
+        # Запускаем автотесты
+        # Для проектов на базе Selenide необходимо добавить параметр для запуска браузера
+        # в headless режиме -Dselenide.headless=true, параметр --info должен остаться
+        run: ./gradlew test --info
